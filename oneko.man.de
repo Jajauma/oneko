@@ -1,0 +1,135 @@
+.TH ONEKO 6x
+.SH NAME oneko \- Erstellt eine süße Katze (jap. neko) die den Mauszeiger verfolgt.
+.SH ÜBERSICHT
+.B oneko
+[\fB-help\fP] [\fB-tora\fP]
+[\fB-dog\fP] [\fB-bsd_daemon\fP] [\fB-bsd\fP]
+[\fB-sakura\fP] [\fB-tomoyo\fP]
+[\fB-time\fP \fIn\fP] [\fB-speed\fP \fIn\fP] [\fB-idle\fP \fIn\fP]
+[\fB-name\fP \fIname\fP] [\fB-towindow\fP] [\fB-toname\fP \fIname\fP]
+[\fB-tofocus\fP]
+[\fB-position\fP \fIgeometry\fP]
+[\fB-rv\fP] [\fB-noshape\fP] [\fB-noclick\fP] [\fB-fg\fP] [\fB-bg\fP]
+.SH BESCHREIBUNG
+.I oneko
+ändert in den Standardeinstellungen den Mauscursor in eine Maus und erstellt eine kleine süße Katze die den Mauscursor jagt.
+Wenn die Katze die ``Mauscursor'' erreicht hat und und da verweilt schläft sie ein.
+"oneko" ist japanisch und heißt so viel wie "Die Katze" von Japanisch "neko" (Katze).
+.SS Optionen
+.TP
+.B -help
+Zeigt einen Hilfetext mit möglichen Optionen.
+.TP
+.B -tora
+Erstellt statt einer gewöhnlichen, eine gestreifte bzw. getigerte Katze. "Tora" ist Japanisch und heißt "Tiger".
+.TP
+.B -dog
+Statt einer Katze läuft ein Hund über den Bildschirm.
+.TP
+.B -bsd
+Ein 4.3BSD Dämon anstelle einer Katze. (Aus rechtlichen Gründen nicht in jeder Distribution enthalten).
+.TP
+.B -sakura
+Sakura Kinomoto die hellhaarige Protagonistin aus dem Manga Cardcaptor Sakura anstelle einer Katze.
+.TP
+.B -tomoyo
+Tomoyo Daidouji ein dunkelhaariges Mädchen aus dem Manga Cardcaptor Sakura anstelle einer Katze.
+.TP
+.BI \-time " Intervall"
+Setzt das Zeitintervall zwischen den Animationsbildern in Mikrosekunden.
+Der Standardwert ist 125000. Mit kleineren Werten läuft die Katze schneller.
+.TP
+.BI \-speed " Distanz"
+Setzt die Distanz die die Katze in einzelnen Animationsschritten zurücklegt in Pixeln.
+Standardwert ist 16.
+.TP
+.BI \-idle " Geschwindigkeit"
+Setzt den Schwellwert wie schnell die ``Maus'' wegrennen muß um die Katze zu wecken.
+.TP
+.BI \-name " Name"
+Setzt den Namen des ``Fensters` der Katze. Nützlich wenn wenn man die Katze mit einer weiteren Katze verfolgen möchte, siehe -toname.
+.TP
+.B -towindow
+Wenn
+.I oneko
+mit dieser Option gestartet wird, muß man ein Fenster mit dem Mauscursor selektieren.
+Dann erscheit die Katze und verfolgt das gewählte Fenster statt der Maus.
+Man kann ein anderes laufendes
+.I oneko
+als Zielfenster wählen, wenn bei diesem die Option -noclick gewählt ist.
+Wenn das root-Fenster gewählt wurde oder das gewählte Fenster nicht sichtbar ist verfolgt die Katze wie gewöhnlich die Maus.
+Wenn das Zielfenster geschlossen wird beendet sich auch das Program.
+.TP
+.BI \-toname " Name"
+Setzt den Namen eines Zielfensters das die Katze anstelle der Maus verfolgen soll.
+Man kann ein anderes laufendes
+.I oneko
+als Zielfenster setzen.
+Wenn das gewählte Fenster nicht sichtbar ist verfolgt die Katze wie gewöhnlich die Maus.
+Wenn das Zielfenster geschlossen wird beendet sich auch das Program.
+.TP
+.B -tofocus
+Die Katze läuft zu und auf dem aktiven Fenster.
+Wenn kein aktives Fenster sichtbar ist verfolgt die Katze wie gewöhnlich die Maus.
+.TP
+.BI \-position " Geometrie"
+Setzt X und Y Offset in Pixeln um die relative Position der Katze zur Maus anzupassen.
+.TP
+.B -rv
+Vertauscht Vordergrund- mit Hintergrundfarbe.
+.TP
+.B -noshape
+Benutze keine SHAPE Erweiterung.
+.TP
+.B -noclick
+Verhindert daß man durch die Katze durch klicken kann, sprich die Katze versucht dann den Mauscursor beim Klicken zu blockieren. Siehe auch -towindow.
+.TP
+.BI \-fg " Farbe"
+Vordergrundfarbe.
+.TP
+.BI \-bg " Farbe"
+Hintergrundfarbe.
+.SS Resources
+Der Anwedungsname ist "neko"(oder "tora") und der Klassenname ist "Oneko".
+.TP
+.B tora
+Setze ``True'' wenn du eine "tora-neko" willst.
+.TP
+.B time
+Setzt Zeitintervall in Mikrosekunden.
+.TP
+.B speed
+Setzt Sprungdistanz in Pixeln.
+.TP
+.B idle
+Setzt Geschwindigkeits-Schwellwert um die Katze aufzuwachen wenn die ``Maus'' wegläuft.
+.TP
+.B noshape
+Setze ``True'' wenn du keine SHAPE Erweiterung benutzen willst.
+.TP
+.B reverse
+Setze ``True'' wenn du Vordergrund- und Hintergrundfarbe vertauschen willst.
+.TP
+.B foreground
+Vordergrundfarbe.
+.TP
+.B background
+Hintergrundfarbe.
+.SH Hinweise
+Wenn dieses Programm XGetDefault benutzt, gehe sicher das "neko.resouce" Formular zu benutzen.
+Wenn dieses Programm durch Hard- oder Softlink als "tora" ausgeführt wird, so wird die \fB-tora\fP Option automatisch aktiviert.
+.PP
+BSD Daemon Copyright 1988 von Marshall Kirk McKusick. All Rechte Vorbehalten.
+.PP
+Sakura Kinomoto und Tomoyo Daidouji sind Charakter in dem Comic (Manga)
+"CARDCAPTOR SAKURA" (CLAMP, Kodansha), mit der Duldung der Benutzung in
+CLAMP SCHOOL WEB CAMPUS (http://www.clamp.f-2.co.jp/).
+.SH AUTOR
+Original
+.I xneko
+wurde von Masayuki Koba geschrieben und abgewandelt zu 
+.I oneko
+von Tatsuya Kato, und weiter verändert von John Lerchey, Eric
+Anderson, Toshihiro Kanda, Kiichiroh Mukose und Simon Ullrich Richter.
+.SH MAINTAINER
+Sende Verbesserungen, Fragen und Probleme an Simon Ullrich Richter (neuron@mail.uni-paderborn.de).
