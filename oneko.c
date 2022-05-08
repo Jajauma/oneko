@@ -1,5 +1,5 @@
 /*
- *	oneko  -  X11 $@G-(J
+ *	oneko  -  X11 猫
  *
  *	Changelog:
  *	-20170402 Added ClickThrough (ShapeInput-Pixmap) by Simon Ullrich Richter
@@ -12,27 +12,27 @@ static char rcsid[] = "$Header: /home/sun/unix/kato/xsam/oneko/oneko.c,v 1.5 90/
 #include "oneko.h"
 #include "patchlevel.h"
 /*
- *	$@%0%m!<%P%kJQ?t(J
+ *	グローバル変数
  */
 
-char	*ClassName = "Oneko";		/* $@%3%^%s%IL>>N(J */
-char	*ProgramName;			/* $@%3%^%s%IL>>N(J */
+char	*ClassName = "Oneko";		/* コマンド名称 */
+char	*ProgramName;			/* コマンド名称 */
 
-Display	*theDisplay;			/* $@%G%#%9%W%l%$9=B$BN(J */
-int	theScreen;			/* $@%9%/%j!<%sHV9f(J */
-unsigned int	theDepth;		/* $@%G%W%9(J */
-Window	theRoot;			/* $@%k!<%H%&%#%s%I%&$N#I#D(J */
-Window	theWindow;			/* $@G-%&%#%s%I%&$N#I#D(J */
-char    *WindowName = NULL;		/* $@G-%&%#%s%I%&$NL>A0(J */
-Window	theTarget = None;		/* $@L\I8%&%#%s%I%&$N#I#D(J */
-char    *TargetName = NULL;		/* $@L\I8%&%#%s%I%&$NL>A0(J */
-Cursor	theCursor;			/* $@$M$:$_%+!<%=%k(J */
+Display	*theDisplay;			/* ディスプレイ構造体 */
+int	theScreen;			/* スクリーン番号 */
+unsigned int	theDepth;		/* デプス */
+Window	theRoot;			/* ルートウィンドウのＩＤ */
+Window	theWindow;			/* 猫ウィンドウのＩＤ */
+char    *WindowName = NULL;		/* 猫ウィンドウの名前 */
+Window	theTarget = None;		/* 目標ウィンドウのＩＤ */
+char    *TargetName = NULL;		/* 目標ウィンドウの名前 */
+Cursor	theCursor;			/* ねずみカーソル */
 
-unsigned int	WindowWidth;		/* $@%k!<%H%&%#%s%I%&$NI}(J */
-unsigned int	WindowHeight;		/* $@%k!<%H%&%#%s%I%&$N9b$5(J */
+unsigned int	WindowWidth;		/* ルートウィンドウの幅 */
+unsigned int	WindowHeight;		/* ルートウィンドウの高さ */
 
-XColor	theForegroundColor;		/* $@?'(J ($@%U%)%"%0%i%&%s%I(J) */
-XColor	theBackgroundColor;		/* $@?'(J ($@%P%C%/%0%i%&%s%I(J) */
+XColor	theForegroundColor;		/* 色 (フォアグラウンド) */
+XColor	theBackgroundColor;		/* 色 (バックグラウンド) */
 
 int Synchronous = False;
 /* Types of animals */
@@ -63,7 +63,7 @@ AnimalDefaultsData AnimalDefaultsDataTable[] =
 };
 
 /*
- *	$@$$$m$$$m$J=i4|@_Dj(J ($@%*%W%7%g%s!"%j%=!<%9$GJQ$($i$l$k$h(J)
+ *	いろいろな初期設定 (オプション、リソースで変えられるよ)
  */
 
 					/* Resource:	*/
@@ -81,41 +81,41 @@ int	ToFocus = NOTDEFINED;		/*   tofocus	*/
 int     XOffset=0,YOffset=0;            /* X and Y offsets for cat from mouse
 					   pointer. */
 /*
- *	$@$$$m$$$m$J>uBVJQ?t(J
+ *	いろいろな状態変数
  */
 
 Bool	DontMapped = True;
 
-int	NekoTickCount;		/* $@G-F0:n%+%&%s%?(J */
-int	NekoStateCount;		/* $@G-F10l>uBV%+%&%s%?(J */
-int	NekoState;		/* $@G-$N>uBV(J */
+int	NekoTickCount;		/* 猫動作カウンタ */
+int	NekoStateCount;		/* 猫同一状態カウンタ */
+int	NekoState;		/* 猫の状態 */
 
-int	MouseX;			/* $@%^%&%9#X:BI8(J */
-int	MouseY;			/* $@%^%&%9#Y:BI8(J */
+int	MouseX;			/* マウスＸ座標 */
+int	MouseY;			/* マウスＹ座標 */
 
-int	PrevMouseX = 0;		/* $@D>A0$N%^%&%9#X:BI8(J */
-int	PrevMouseY = 0;		/* $@D>A0$N%^%&%9#Y:BI8(J */
-Window	PrevTarget = None;	/* $@D>A0$NL\I8%&%#%s%I%&$N#I#D(J */
+int	PrevMouseX = 0;		/* 直前のマウスＸ座標 */
+int	PrevMouseY = 0;		/* 直前のマウスＹ座標 */
+Window	PrevTarget = None;	/* 直前の目標ウィンドウのＩＤ */
 
-int	NekoX;			/* $@G-#X:BI8(J */
-int	NekoY;			/* $@G-#Y:BI8(J */
+int	NekoX;			/* 猫Ｘ座標 */
+int	NekoY;			/* 猫Ｙ座標 */
 
-int	NekoMoveDx;		/* $@G-0\F05wN%#X(J */
-int	NekoMoveDy;		/* $@G-0\F05wN%#Y(J */
+int	NekoMoveDx;		/* 猫移動距離Ｘ */
+int	NekoMoveDy;		/* 猫移動距離Ｙ */
 
-int	NekoLastX;		/* $@G-:G=*IA2h#X:BI8(J */
-int	NekoLastY;		/* $@G-:G=*IA2h#Y:BI8(J */
-GC	NekoLastGC;		/* $@G-:G=*IA2h(J GC */
+int	NekoLastX;		/* 猫最終描画Ｘ座標 */
+int	NekoLastY;		/* 猫最終描画Ｙ座標 */
+GC	NekoLastGC;		/* 猫最終描画 GC */
 /* Variables used to set how quickly the program will chose to raise itself. */
 /* Look at Interval(), Handle Visiblility Notify Event */
 #define DEFAULT_RAISE_WAIT 16  /* About 2 seconds with default interval */
 int     RaiseWindowDelay=0;
 /*
- *	$@$=$NB>(J
+ *	その他
  */
 
-double	SinPiPer8Times3;	/* sin($@#3&P!?#8(J) */
-double	SinPiPer8;		/* sin($@&P!?#8(J) */
+double	SinPiPer8Times3;	/* sin(３π／８) */
+double	SinPiPer8;		/* sin(π／８) */
 
 Pixmap	Mati2Xbm, Jare2Xbm, Kaki1Xbm, Kaki2Xbm, Mati3Xbm, Sleep1Xbm, Sleep2Xbm;
 Pixmap	Mati2Msk, Jare2Msk, Kaki1Msk, Kaki2Msk, Mati3Msk, Sleep1Msk, Sleep2Msk;
@@ -274,7 +274,7 @@ Animation	AnimationPattern[][2] =
 static void NullFunction();
 
 /*
- *	$@%S%C%H%^%C%W%G!<%?!&(JGC $@=i4|2=(J
+ *	ビットマップデータ・GC 初期化
  */
 
 void
@@ -324,7 +324,7 @@ InitBitmapAndGCs()
 }
 
 /*
- *	$@%j%=!<%9!&%G!<%?%Y!<%9$+$iI,MW$J%j%=!<%9$r<h$j=P$9(J
+ *	リソース・データベースから必要なリソースを取り出す
  */
 
 char	*
@@ -343,7 +343,7 @@ char	*resource;
 }
 
 /*
- *	$@%j%=!<%9!&%G!<%?%Y!<%9$+$i%*%W%7%g%s$r@_Dj(J
+ *	リソース・データベースからオプションを設定
  */
 
 GetResources()
@@ -451,7 +451,7 @@ GetResources()
 }
 
 /*
- *	$@$M$:$_7?%+!<%=%k$r:n$k(J
+ *	ねずみ型カーソルを作る
  */
 
 MakeMouseCursor()
@@ -480,7 +480,7 @@ MakeMouseCursor()
 }
 
 /*
- *	$@?'$r=i4|@_Dj$9$k(J
+ *	色を初期設定する
  */
 
 SetupColors()
@@ -606,7 +606,7 @@ Window Window_With_Name(dpy, top, name)
 }
 
 /*
- *	$@%9%/%j!<%s4D6-=i4|2=(J
+ *	スクリーン環境初期化
  */
 
 void
@@ -728,7 +728,7 @@ InitScreen(DisplayName)
 
 
 /*
- *	SIGINT $@%7%0%J%k=hM}(J
+ *	SIGINT シグナル処理
  */
 
 void
@@ -754,10 +754,10 @@ RestoreCursor()
 
 
 /*
- *	$@%$%s%?!<%P%k(J
+ *	インターバル
  *
- *	$@!!$3$N4X?t$r8F$V$H!"$"$k0lDj$N;~4VJV$C$F$3$J$/$J$k!#G-(J
- *	$@$NF0:n%?%$%_%s%0D4@0$KMxMQ$9$k$3$H!#(J
+ *	　この関数を呼ぶと、ある一定の時間返ってこなくなる。猫
+ *	の動作タイミング調整に利用すること。
  */
 
 void
@@ -770,7 +770,7 @@ Interval()
 
 
 /*
- *	$@%F%#%C%/%+%&%s%H=hM}(J
+ *	ティックカウント処理
  */
 
 void
@@ -789,7 +789,7 @@ TickCount()
 
 
 /*
- *	$@G->uBV@_Dj(J
+ *	猫状態設定
  */
 
 void
@@ -804,7 +804,7 @@ SetNekoState(SetValue)
 
 
 /*
- *	$@G-IA2h=hM}(J
+ *	猫描画処理
  */
 
 void
@@ -850,7 +850,7 @@ DrawNeko(x, y, DrawAnime)
 
 
 /*
- *	$@G-:FIA2h=hM}(J
+ *	猫再描画処理
  */
 
 void
@@ -864,7 +864,7 @@ RedrawNeko()
 
 
 /*
- *	$@G-0\F0J}K!7hDj(J
+ *	猫移動方法決定
  *
  *      This sets the direction that the neko is moving.
  *
@@ -926,7 +926,7 @@ NekoDirection()
 
 
 /*
- *	$@G-JI$V$D$+$jH=Dj(J
+ *	猫壁ぶつかり判定
  */
 
 Bool
@@ -954,7 +954,7 @@ IsWindowOver()
 
 
 /*
- *	$@G-0\F0>u67H=Dj(J
+ *	猫移動状況判定
  */
 
 Bool
@@ -969,7 +969,7 @@ IsNekoDontMove()
 
 
 /*
- *	$@G-0\F03+;OH=Dj(J
+ *	猫移動開始判定
  */
 
 Bool
@@ -988,7 +988,7 @@ IsNekoMoveStart()
 
 
 /*
- *	$@G-0\F0(J dx, dy $@7W;;(J
+ *	猫移動 dx, dy 計算
  */
 
 void
@@ -1108,7 +1108,7 @@ CalcDxDy()
 
 
 /*
- *	$@F0:n2r@OG-IA2h=hM}(J
+ *	動作解析猫描画処理
  */
 
 void
@@ -1190,7 +1190,7 @@ NekoThinkDraw()
 	if (NekoStateCount < NEKO_AWAKE_TIME) {
 	    break;
 	}
-	NekoDirection();	/* $@G-$,F0$/8~$-$r5a$a$k(J */
+	NekoDirection();	/* 猫が動く向きを求める */
 	break;
     case NEKO_U_MOVE:
     case NEKO_D_MOVE:
@@ -1233,7 +1233,7 @@ NekoThinkDraw()
 
 
 /*
- *	$@%-!<%$%Y%s%H=hM}(J
+ *	キーイベント処理
  */
 
 Bool
@@ -1257,7 +1257,7 @@ ProcessKeyPress(theKeyEvent)
     switch (theKeyBuffer[0]) {
     case 'q':
     case 'Q':
-      if (theKeyEvent->state & Mod1Mask) { /* META (Alt) $@%-!<(J */
+      if (theKeyEvent->state & Mod1Mask) { /* META (Alt) キー */
 	ReturnState = False;
       }
       break;
@@ -1271,7 +1271,7 @@ ProcessKeyPress(theKeyEvent)
 
 
 /*
- *	$@%$%Y%s%H=hM}(J
+ *	イベント処理
  */
 
 Bool
@@ -1310,7 +1310,7 @@ ProcessEvent()
 
 
 /*
- *	$@G-=hM}(J
+ *	猫処理
  */
 
 void
@@ -1318,7 +1318,7 @@ ProcessNeko()
 {
   struct itimerval	Value;
 
-  /* $@G-$N=i4|2=(J */
+  /* 猫の初期化 */
 
   NekoX = (WindowWidth - BITMAP_WIDTH / 2) / 2;
   NekoY = (WindowHeight - BITMAP_HEIGHT / 2) / 2;
@@ -1328,7 +1328,7 @@ ProcessNeko()
 
   SetNekoState(NEKO_STOP);
 
-  /* $@%?%$%^!<@_Dj(J */
+  /* タイマー設定 */
 
   timerclear(&Value.it_interval);
   timerclear(&Value.it_value);
@@ -1338,7 +1338,7 @@ ProcessNeko()
 
   setitimer(ITIMER_REAL, &Value, 0);
 
-  /* $@%a%$%s=hM}(J */
+  /* メイン処理 */
 
 #ifdef SHAPE
    if (NoClickThrough == False) {
@@ -1354,7 +1354,7 @@ ProcessNeko()
 
 
 /*
- *	SIGALRM $@%7%0%J%k=hM}(J
+ *	SIGALRM シグナル処理
  */
 
 static void
@@ -1367,7 +1367,7 @@ NullFunction()
 }
 
 /*
- *	$@%(%i!<=hM}(J
+ *	エラー処理
  */
 
 int
@@ -1429,7 +1429,7 @@ Usage()
 
 
 /*
- *	$@%*%W%7%g%s$NM}2r(J
+ *	オプションの理解
  */
 
 Bool
@@ -1569,7 +1569,7 @@ GetArguments(argc, argv, theDisplayName)
 
 
 /*
- *	$@%a%$%s4X?t(J
+ *	メイン関数
  */
 
 int
