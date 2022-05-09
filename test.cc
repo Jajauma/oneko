@@ -25,13 +25,13 @@
 #pragma GCC diagnostic pop
 #endif  // __GNUC__
 
-template <typename Storage>
-static void FlipBytes(Storage&& stor) {
-  uint8_t* u8_data = reinterpret_cast<uint8_t*>(&stor);
-  for (auto i = 0u; i < sizeof(stor); ++i) {
-    u8_data[i] = (u8_data[i] & 0xF0) >> 4 | (u8_data[i] & 0x0F) << 4;
-    u8_data[i] = (u8_data[i] & 0xCC) >> 2 | (u8_data[i] & 0x33) << 2;
-    u8_data[i] = (u8_data[i] & 0xAA) >> 1 | (u8_data[i] & 0x55) << 1;
+template <typename It>
+static void FlipBytes(It start, It end) {
+  while (start != end) {
+    *start = (*start & 0xF0) >> 4 | (*start & 0x0F) << 4;
+    *start = (*start & 0xCC) >> 2 | (*start & 0x33) << 2;
+    *start = (*start & 0xAA) >> 1 | (*start & 0x55) << 1;
+    ++start;
   }
 }
 
@@ -43,7 +43,7 @@ static LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
 
   switch (uMsg) {
     case WM_CREATE:
-      FlipBytes(awake_tora_bits);
+      FlipBytes(std::begin(awake_tora_bits), std::end(awake_tora_bits));
       tora_bitmap = CreateBitmap(awake_tora_width, awake_tora_height, 1, 1,
                                  awake_tora_bits);
       return 0;
