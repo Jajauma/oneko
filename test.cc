@@ -8,10 +8,22 @@
 #pragma warning(disable : 4309)
 #pragma warning(disable : 4838)
 #endif  // _MSC_VER
+
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnarrowing"
+#pragma GCC diagnostic ignored "-Wunused-variable"
+#endif  // __GNUC__
+
 #include "bitmaps/tora/tora.include"
+
 #if defined(_MSC_VER)
 #pragma warning(pop)
 #endif  // _MSC_VER
+
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif  // __GNUC__
 
 template <typename Storage>
 static void FlipBytes(Storage&& stor) {
