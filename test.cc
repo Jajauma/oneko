@@ -22,8 +22,7 @@ static LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
   }
 }
 
-int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE hInstPrev, LPTSTR cmdline,
-                     int nCmdShow) {
+int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE, LPTSTR, int nCmdShow) {
   static constexpr TCHAR kClassName[] = TEXT("Test Project");
   WNDCLASS wc = {};
   wc.style = CS_HREDRAW | CS_VREDRAW;
