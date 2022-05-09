@@ -1,22 +1,56 @@
 #include <tchar.h>
 #include <windows.h>
 
+#include <cstdint>
+
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4309)
+#pragma warning(disable : 4838)
+#endif  // _MSC_VER
+#include "bitmaps/tora/tora.include"
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif  // _MSC_VER
+
+template <typename Storage>
+static void FlipBytes(Storage&& stor) {
+  uint8_t* u8_data = reinterpret_cast<uint8_t*>(&stor);
+  for (auto i = 0u; i < sizeof(stor); ++i) {
+    u8_data[i] = (u8_data[i] & 0xF0) >> 4 | (u8_data[i] & 0x0F) << 4;
+    u8_data[i] = (u8_data[i] & 0xCC) >> 2 | (u8_data[i] & 0x33) << 2;
+    u8_data[i] = (u8_data[i] & 0xAA) >> 1 | (u8_data[i] & 0x55) << 1;
+  }
+}
+
 static LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
                                    LPARAM lParam) {
+  static HBITMAP tora_bitmap;
+  static PAINTSTRUCT ps;
+  static HDC hdc, hdc_mem;
+
   switch (uMsg) {
-    case WM_PAINT: {
-      PAINTSTRUCT ps;
-      RECT rect;
-      const auto hdc = BeginPaint(hWnd, &ps);
-      GetClientRect(hWnd, &rect);
-      DrawText(hdc, TEXT("Hello Windows again ..."), -1, &rect,
-               DT_SINGLELINE | DT_CENTER | DT_VCENTER);
+    case WM_CREATE:
+      FlipBytes(awake_tora_bits);
+      tora_bitmap = CreateBitmap(awake_tora_width, awake_tora_height, 1, 1,
+                                 awake_tora_bits);
+      return 0;
+
+    case WM_PAINT:
+      hdc = BeginPaint(hWnd, &ps);
+      hdc_mem = CreateCompatibleDC(hdc);
+      SelectObject(hdc_mem, tora_bitmap);
+      BitBlt(hdc, 0, 0, awake_tora_width, awake_tora_height, hdc_mem, 0, 0,
+             SRCCOPY);
+      DeleteDC(hdc_mem);
       EndPaint(hWnd, &ps);
       return 0;
-    }
+
     case WM_DESTROY:
+      DeleteObject(tora_bitmap);
       PostQuitMessage(0);
       return 0;
+
     default:
       return DefWindowProc(hWnd, uMsg, wParam, lParam);
   }
