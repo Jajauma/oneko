@@ -6,8 +6,19 @@ add_executable(TestProject WIN32 test.cc)
 
 if (UNICODE)
     target_compile_definitions(TestProject PRIVATE UNICODE PRIVATE _UNICODE)
-    # https://gitlab.kitware.com/cmake/cmake/-/issues/21202
-    if (NOT CMAKE_GENERATOR MATCHES "Visual Studio")
-        target_link_options(TestProject PRIVATE "/entry:wWinMainCRTStartup")
+endif()
+
+# allow mingw and winelib
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    target_link_options(TestProject PRIVATE "-mwindows")
+    if (UNICODE)
+        target_link_options(TestProject PRIVATE "-municode")
     endif()
+endif()
+
+# allow ninja with visual studio
+if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC"
+        AND NOT CMAKE_GENERATOR MATCHES "Visual Studio"
+        AND UNICODE)
+    target_link_options(TestProject PRIVATE "/entry:wWinMainCRTStartup")
 endif()
