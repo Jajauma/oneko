@@ -2,6 +2,7 @@
 #include <windows.h>
 
 #include <cstdint>
+#include <iterator>
 
 #if defined(_MSC_VER)
 #pragma warning(push)
