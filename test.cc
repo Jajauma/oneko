@@ -47,7 +47,7 @@ class BaseWindowClass {
     wc->lpszClassName = GetClassName();
     wc->hIcon = LoadIcon(nullptr, IDI_APPLICATION);
     wc->hCursor = LoadCursor(nullptr, IDC_ARROW);
-    wc->hbrBackground = static_cast<HBRUSH>(GetStockObject(WHITE_BRUSH));
+    wc->hbrBackground = static_cast<HBRUSH>(GetStockObject(LTGRAY_BRUSH));
   }
 
   virtual PTCHAR GetClassName() const = 0;
