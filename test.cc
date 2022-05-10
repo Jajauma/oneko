@@ -37,10 +37,21 @@ static void FlipBytes(It start, It end) {
 }
 
 static void DisplayFatalError(HWND parent, const char *error_msg = nullptr) {
-  TCHAR error_buf[64];
-  _sntprintf_s(error_buf, 64, _TRUNCATE, TEXT("Fatal: %hs"),
-               error_msg ? error_msg : "unknown error");
-  MessageBox(parent, error_buf, TEXT("TestProject"), MB_ICONERROR);
+  static constexpr auto kMaxSymbolCount = 64;
+  char buf[kMaxSymbolCount];
+  std::snprintf(buf, kMaxSymbolCount, "Fatal: %s",
+                error_msg ? error_msg : "unknown error");
+#if defined(UNICODE)
+  TCHAR buf_wide[kMaxSymbolCount];
+  MultiByteToWideChar(CP_ACP, 0, buf, -1, buf_wide, kMaxSymbolCount);
+#endif  // UNICODE
+  MessageBox(parent,
+#if defined(UNICODE)
+             buf_wide,
+#else   // UNICODE
+             buf,
+#endif  // UNICODE
+             TEXT("TestProject"), MB_ICONERROR);
 }
 
 template <class WindowClass>
