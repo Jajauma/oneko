@@ -3,7 +3,7 @@ project(TestProject LANGUAGES CXX)
 
 option(UNICODE "Build with wide character APIs enabled" ON)
 option(ENABLE_WARNINGS "Build with compiler warnings enabled" ON)
-add_executable(TestProject WIN32 test.cc)
+add_executable(TestProject WIN32 test.cc sprite_library.cc)
 
 if (UNICODE)
     target_compile_definitions(TestProject PRIVATE UNICODE PRIVATE _UNICODE)
