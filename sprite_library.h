@@ -52,6 +52,7 @@ class SpriteLibrary {
     kFrameCount
   };
   HBITMAP GetBitmap(Frame f, Character c);
+  HBITMAP GetMaskBitmap(Frame f, Character c);
 
  private:
   struct BitmapDeleter {
@@ -59,8 +60,9 @@ class SpriteLibrary {
     void operator()(HBITMAP h) const { DeleteObject(h); }
   };
   struct SpriteData {
-    void *data;
-    std::unique_ptr<HBITMAP, BitmapDeleter> bitmap;
+    void *data, *mask_data;
+    std::unique_ptr<HBITMAP, BitmapDeleter> bitmap, mask_bitmap;
   };
   static SpriteData sprites_[kFrameCount][kCharacterCount];
+  void LoadSprite(SpriteData* sprite);
 };

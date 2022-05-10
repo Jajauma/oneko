@@ -103,6 +103,11 @@ class MainWindowClass : public BaseWindowClass<MainWindowClass> {
         sprite_grid_[i][j].bitmap =
             sprite_library_.GetBitmap(static_cast<SpriteLibrary::Frame>(i),
                                       static_cast<SpriteLibrary::Character>(j));
+        sprite_mask_grid_[i][j].x = i * (SpriteLibrary::kSpriteSize + 5);
+        sprite_mask_grid_[i][j].y = j * (SpriteLibrary::kSpriteSize + 5) + 250;
+        sprite_mask_grid_[i][j].bitmap = sprite_library_.GetMaskBitmap(
+            static_cast<SpriteLibrary::Frame>(i),
+            static_cast<SpriteLibrary::Character>(j));
       }
   }
 
@@ -119,6 +124,10 @@ class MainWindowClass : public BaseWindowClass<MainWindowClass> {
           for (auto j = 0; j < SpriteLibrary::kCharacterCount; ++j) {
             SelectObject(hdc_mem, sprite_grid_[i][j].bitmap);
             BitBlt(hdc, sprite_grid_[i][j].x, sprite_grid_[i][j].y,
+                   SpriteLibrary::kSpriteSize, SpriteLibrary::kSpriteSize,
+                   hdc_mem, 0, 0, SRCCOPY);
+            SelectObject(hdc_mem, sprite_mask_grid_[i][j].bitmap);
+            BitBlt(hdc, sprite_mask_grid_[i][j].x, sprite_mask_grid_[i][j].y,
                    SpriteLibrary::kSpriteSize, SpriteLibrary::kSpriteSize,
                    hdc_mem, 0, 0, SRCCOPY);
           }
@@ -138,10 +147,14 @@ class MainWindowClass : public BaseWindowClass<MainWindowClass> {
 
  private:
   SpriteLibrary sprite_library_;
-  struct {
+  struct SpriteCell {
     int x, y;
     HBITMAP bitmap;
-  } sprite_grid_[SpriteLibrary::kFrameCount][SpriteLibrary::kCharacterCount];
+  };
+  SpriteCell sprite_grid_[SpriteLibrary::kFrameCount]
+                         [SpriteLibrary::kCharacterCount];
+  SpriteCell sprite_mask_grid_[SpriteLibrary::kFrameCount]
+                              [SpriteLibrary::kCharacterCount];
 };
 
 int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE, LPTSTR, int nCmdShow) try {
