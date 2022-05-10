@@ -26,34 +26,6 @@
 #pragma GCC diagnostic pop
 #endif  // __GNUC__
 
-template <typename It>
-static void FlipBytes(It start, It end) {
-  while (start != end) {
-    *start = (*start & 0xF0) >> 4 | (*start & 0x0F) << 4;
-    *start = (*start & 0xCC) >> 2 | (*start & 0x33) << 2;
-    *start = (*start & 0xAA) >> 1 | (*start & 0x55) << 1;
-    ++start;
-  }
-}
-
-static void DisplayFatalError(HWND parent, const char *error_msg = nullptr) {
-  static constexpr auto kMaxSymbolCount = 64;
-  char buf[kMaxSymbolCount];
-  std::snprintf(buf, kMaxSymbolCount, "Fatal: %s",
-                error_msg ? error_msg : "unknown error");
-#if defined(UNICODE)
-  TCHAR buf_wide[kMaxSymbolCount];
-  MultiByteToWideChar(CP_ACP, 0, buf, -1, buf_wide, kMaxSymbolCount);
-#endif  // UNICODE
-  MessageBox(parent,
-#if defined(UNICODE)
-             buf_wide,
-#else   // UNICODE
-             buf,
-#endif  // UNICODE
-             TEXT("TestProject"), MB_ICONERROR);
-}
-
 template <class WindowClass>
 class BaseWindowClass {
  public:
@@ -162,8 +134,36 @@ class MainWindowClass : public BaseWindowClass<MainWindowClass> {
   HBITMAP tora_bitmap_;
 };
 
+static void DisplayFatalError(HWND parent, const char *error_msg = nullptr) {
+  static constexpr auto kMaxSymbolCount = 64;
+  char buf[kMaxSymbolCount];
+  std::snprintf(buf, kMaxSymbolCount, "Fatal: %s",
+                error_msg ? error_msg : "unknown error");
+#if defined(UNICODE)
+  TCHAR buf_wide[kMaxSymbolCount];
+  MultiByteToWideChar(CP_ACP, 0, buf, -1, buf_wide, kMaxSymbolCount);
+#endif  // UNICODE
+  MessageBox(parent,
+#if defined(UNICODE)
+             buf_wide,
+#else   // UNICODE
+             buf,
+#endif  // UNICODE
+             TEXT("TestProject"), MB_ICONERROR);
+}
+
+template <typename It>
+static void FlipBits(It start, It end) {
+  while (start != end) {
+    *start = (*start & 0xF0) >> 4 | (*start & 0x0F) << 4;
+    *start = (*start & 0xCC) >> 2 | (*start & 0x33) << 2;
+    *start = (*start & 0xAA) >> 1 | (*start & 0x55) << 1;
+    ++start;
+  }
+}
+
 int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE, LPTSTR, int nCmdShow) try {
-  FlipBytes(std::begin(awake_tora_bits), std::end(awake_tora_bits));
+  FlipBits(std::begin(awake_tora_bits), std::end(awake_tora_bits));
 
   MainWindowClass window_class(hInstance);
   const auto window = window_class.Create();
