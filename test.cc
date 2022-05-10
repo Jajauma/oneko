@@ -95,7 +95,16 @@ class BaseWindowClass {
 
 class MainWindowClass : public BaseWindowClass<MainWindowClass> {
  public:
-  explicit MainWindowClass(HINSTANCE hInstance) : BaseWindowClass(hInstance) {}
+  explicit MainWindowClass(HINSTANCE hInstance) : BaseWindowClass(hInstance) {
+    for (auto i = 0; i < SpriteLibrary::kFrameCount; ++i)
+      for (auto j = 0; j < SpriteLibrary::kCharacterCount; ++j) {
+        sprite_grid_[i][j].x = i * (SpriteLibrary::kSpriteSize + 5);
+        sprite_grid_[i][j].y = j * (SpriteLibrary::kSpriteSize + 5);
+        sprite_grid_[i][j].bitmap =
+            sprite_library_.GetBitmap(static_cast<SpriteLibrary::Frame>(i),
+                                      static_cast<SpriteLibrary::Character>(j));
+      }
+  }
 
   LRESULT HandleMessage(HWND hWnd, UINT uMsg, WPARAM wParam,
                         LPARAM lParam) override {
@@ -106,11 +115,13 @@ class MainWindowClass : public BaseWindowClass<MainWindowClass> {
       case WM_PAINT:
         hdc = BeginPaint(hWnd, &ps);
         hdc_mem = CreateCompatibleDC(hdc);
-        SelectObject(hdc_mem, sprite_library_.GetBitmap(
-                                  SpriteLibrary::kFrameRightTogi1,
-                                  SpriteLibrary::kCharacterNeko));
-        BitBlt(hdc, 0, 0, SpriteLibrary::kSpriteSize,
-               SpriteLibrary::kSpriteSize, hdc_mem, 0, 0, SRCCOPY);
+        for (auto i = 0; i < SpriteLibrary::kFrameCount; ++i)
+          for (auto j = 0; j < SpriteLibrary::kCharacterCount; ++j) {
+            SelectObject(hdc_mem, sprite_grid_[i][j].bitmap);
+            BitBlt(hdc, sprite_grid_[i][j].x, sprite_grid_[i][j].y,
+                   SpriteLibrary::kSpriteSize, SpriteLibrary::kSpriteSize,
+                   hdc_mem, 0, 0, SRCCOPY);
+          }
         DeleteDC(hdc_mem);
         EndPaint(hWnd, &ps);
         return 0;
@@ -127,6 +138,10 @@ class MainWindowClass : public BaseWindowClass<MainWindowClass> {
 
  private:
   SpriteLibrary sprite_library_;
+  struct {
+    int x, y;
+    HBITMAP bitmap;
+  } sprite_grid_[SpriteLibrary::kFrameCount][SpriteLibrary::kCharacterCount];
 };
 
 int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE, LPTSTR, int nCmdShow) try {
