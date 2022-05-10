@@ -32,6 +32,24 @@
 #pragma GCC diagnostic pop
 #endif  // __GNUC__
 
+static void DisplayFatalError(HWND parent, const char *error_msg = nullptr) {
+  static constexpr auto kMaxSymbolCount = 64;
+  char buf[kMaxSymbolCount];
+  std::snprintf(buf, kMaxSymbolCount, "Fatal: %s",
+                error_msg ? error_msg : "unknown error");
+#if defined(UNICODE)
+  TCHAR buf_wide[kMaxSymbolCount];
+  MultiByteToWideChar(CP_ACP, 0, buf, -1, buf_wide, kMaxSymbolCount);
+#endif  // UNICODE
+  MessageBox(parent,
+#if defined(UNICODE)
+             buf_wide,
+#else   // UNICODE
+             buf,
+#endif  // UNICODE
+             TEXT("TestProject"), MB_ICONERROR);
+}
+
 template <class WindowClass>
 class BaseWindowClass {
  public:
@@ -204,24 +222,6 @@ class MainWindowClass : public BaseWindowClass<MainWindowClass> {
  private:
   SpriteLibrary sprite_library_;
 };
-
-static void DisplayFatalError(HWND parent, const char *error_msg = nullptr) {
-  static constexpr auto kMaxSymbolCount = 64;
-  char buf[kMaxSymbolCount];
-  std::snprintf(buf, kMaxSymbolCount, "Fatal: %s",
-                error_msg ? error_msg : "unknown error");
-#if defined(UNICODE)
-  TCHAR buf_wide[kMaxSymbolCount];
-  MultiByteToWideChar(CP_ACP, 0, buf, -1, buf_wide, kMaxSymbolCount);
-#endif  // UNICODE
-  MessageBox(parent,
-#if defined(UNICODE)
-             buf_wide,
-#else   // UNICODE
-             buf,
-#endif  // UNICODE
-             TEXT("TestProject"), MB_ICONERROR);
-}
 
 int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE, LPTSTR, int nCmdShow) try {
   MainWindowClass window_class(hInstance);
