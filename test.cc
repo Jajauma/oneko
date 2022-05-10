@@ -57,6 +57,8 @@ static void DisplayFatalError(HWND parent, const char *error_msg = nullptr) {
 template <class WindowClass>
 class BaseWindowClass {
  public:
+  explicit BaseWindowClass(HINSTANCE hInstance) : instance_(hInstance) {}
+
   void Register() {
     if (!window_class_) {
       WNDCLASS wc = {};
@@ -71,7 +73,7 @@ class BaseWindowClass {
     const auto window = CreateWindow(
         GetClassName(), TEXT("The Test Project"), WS_OVERLAPPEDWINDOW,
         CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, nullptr,
-        nullptr, GetModuleHandle(nullptr), this);
+        nullptr, instance_, this);
     if (!window) throw std::runtime_error("can't create window");
     return window;
   }
@@ -80,14 +82,14 @@ class BaseWindowClass {
   virtual void SetupWindowClass(WNDCLASS *wc) {
     wc->style = CS_HREDRAW | CS_VREDRAW;
     wc->lpfnWndProc = WindowClass::WindowProc;
-    wc->hInstance = GetModuleHandle(nullptr);
+    wc->hInstance = instance_;
     wc->lpszClassName = GetClassName();
     wc->hIcon = LoadIcon(nullptr, IDI_APPLICATION);
     wc->hCursor = LoadCursor(nullptr, IDC_ARROW);
     wc->hbrBackground = static_cast<HBRUSH>(GetStockObject(WHITE_BRUSH));
   }
 
-  virtual const PTCHAR GetClassName() const = 0;
+  virtual PTCHAR GetClassName() const = 0;
   virtual LRESULT HandleMessage(HWND hWnd, UINT uMsg, WPARAM wParam,
                                 LPARAM lParam) = 0;
 
@@ -117,13 +119,15 @@ class BaseWindowClass {
     }
   }
 
+  HINSTANCE instance_ = nullptr;
   ATOM window_class_ = 0;
 };
 
 class MainWindowClass : public BaseWindowClass<MainWindowClass> {
  public:
-  MainWindowClass()
-      : tora_bitmap_(CreateBitmap(awake_tora_width, awake_tora_height, 1, 1,
+  explicit MainWindowClass(HINSTANCE hInstance)
+      : BaseWindowClass(hInstance),
+        tora_bitmap_(CreateBitmap(awake_tora_width, awake_tora_height, 1, 1,
                                   awake_tora_bits)) {}
 
   ~MainWindowClass() { DeleteObject(tora_bitmap_); }
@@ -152,7 +156,7 @@ class MainWindowClass : public BaseWindowClass<MainWindowClass> {
         return DefWindowProc(hWnd, uMsg, wParam, lParam);
     }
   }
-  const PTCHAR GetClassName() const override { return TEXT("TEST_PROJECT"); }
+  PTCHAR GetClassName() const override { return TEXT("TEST_PROJECT"); }
 
  private:
   HBITMAP tora_bitmap_;
@@ -161,7 +165,7 @@ class MainWindowClass : public BaseWindowClass<MainWindowClass> {
 int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE, LPTSTR, int nCmdShow) try {
   FlipBytes(std::begin(awake_tora_bits), std::end(awake_tora_bits));
 
-  MainWindowClass window_class;
+  MainWindowClass window_class(hInstance);
   const auto window = window_class.Create();
   ShowWindow(window, nCmdShow);
   UpdateWindow(window);
