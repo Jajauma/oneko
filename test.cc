@@ -59,15 +59,6 @@ class BaseWindowClass {
  public:
   explicit BaseWindowClass(HINSTANCE hInstance) : instance_(hInstance) {}
 
-  void Register() {
-    if (!window_class_) {
-      WNDCLASS wc = {};
-      SetupWindowClass(&wc);
-      if (!(window_class_ = RegisterClass(&wc)))
-        throw std::runtime_error("window class registration failed");
-    }
-  }
-
   HWND Create() {
     Register();
     const auto window = CreateWindow(
@@ -94,6 +85,15 @@ class BaseWindowClass {
                                 LPARAM lParam) = 0;
 
  private:
+  void Register() {
+    if (!window_class_) {
+      WNDCLASS wc = {};
+      SetupWindowClass(&wc);
+      if (!(window_class_ = RegisterClass(&wc)))
+        throw std::runtime_error("window class registration failed");
+    }
+  }
+
   static LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
                                      LPARAM lParam) {
     WindowClass *self = nullptr;
