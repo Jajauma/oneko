@@ -2,6 +2,7 @@
 #include <windows.h>
 
 #include <iterator>
+#include <memory>
 #include <stdexcept>
 
 #if defined(_MSC_VER)
@@ -16,6 +17,11 @@
 #pragma GCC diagnostic ignored "-Wunused-variable"
 #endif  // __GNUC__
 
+#include "bitmaps/bsd/bsd.include"
+#include "bitmaps/dog/dog.include"
+#include "bitmaps/neko/neko.include"
+#include "bitmaps/sakura/sakura.include"
+#include "bitmaps/tomoyo/tomoyo.include"
 #include "bitmaps/tora/tora.include"
 
 #if defined(_MSC_VER)
@@ -95,14 +101,77 @@ class BaseWindowClass {
   ATOM window_class_ = 0;
 };
 
+template <typename It>
+static void FlipBits(It start, It end) {
+  while (start != end) {
+    *start = (*start & 0xF0) >> 4 | (*start & 0x0F) << 4;
+    *start = (*start & 0xCC) >> 2 | (*start & 0x33) << 2;
+    *start = (*start & 0xAA) >> 1 | (*start & 0x55) << 1;
+    ++start;
+  }
+}
+
+class SpriteLibrary {
+ public:
+  static constexpr auto kSpriteSize = 32;
+  enum Character {
+    kCharacterNeko = 0,
+    kCharacterTora,
+    kCharacterDog,
+    // kCharacterBeastie,
+    // kCharacterSakura,
+    // kCharacterTomoyo
+    kCharacterCount
+  };
+  enum Frame {
+    kFrameMati2 = 0,
+    kFrameJare2,
+    kFrameKaki1,
+    // kFrameKaki2,
+    // kFrameMati3,
+    // kFrameSleep1,
+    // kFrameSleep2,
+    // kFrameAwake,
+    kFrameCount
+  };
+
+  HBITMAP GetBitmap(Frame f, Character c) {
+    if (!sprites_[f][c].bitmap) {
+      const auto data_begin = sprites_[f][c].data;
+      const auto data_end = data_begin + (kSpriteSize * kSpriteSize) / 8;
+      FlipBits(data_begin, data_end);
+      sprites_[f][c].bitmap.reset(
+          CreateBitmap(kSpriteSize, kSpriteSize, 1, 1, data_begin));
+    }
+    return sprites_[f][c].bitmap.get();
+  }
+
+ private:
+  struct BitmapDeleter {
+    using pointer = HBITMAP;
+    void operator()(HBITMAP h) const { DeleteObject(h); }
+  };
+
+  struct SpriteData {
+    char *data;
+    std::unique_ptr<HBITMAP, BitmapDeleter> bitmap;
+  };
+
+  SpriteData sprites_[kFrameCount][kCharacterCount] = {
+      {{mati2_bits, nullptr},
+       {mati2_tora_bits, nullptr},
+       {mati2_dog_bits, nullptr}},
+      {{jare2_bits, nullptr},
+       {jare2_tora_bits, nullptr},
+       {jare2_dog_bits, nullptr}},
+      {{kaki1_bits, nullptr},
+       {kaki1_tora_bits, nullptr},
+       {kaki1_dog_bits, nullptr}}};
+};
+
 class MainWindowClass : public BaseWindowClass<MainWindowClass> {
  public:
-  explicit MainWindowClass(HINSTANCE hInstance)
-      : BaseWindowClass(hInstance),
-        tora_bitmap_(CreateBitmap(awake_tora_width, awake_tora_height, 1, 1,
-                                  awake_tora_bits)) {}
-
-  ~MainWindowClass() { DeleteObject(tora_bitmap_); }
+  explicit MainWindowClass(HINSTANCE hInstance) : BaseWindowClass(hInstance) {}
 
   LRESULT HandleMessage(HWND hWnd, UINT uMsg, WPARAM wParam,
                         LPARAM lParam) override {
@@ -113,9 +182,11 @@ class MainWindowClass : public BaseWindowClass<MainWindowClass> {
       case WM_PAINT:
         hdc = BeginPaint(hWnd, &ps);
         hdc_mem = CreateCompatibleDC(hdc);
-        SelectObject(hdc_mem, tora_bitmap_);
-        BitBlt(hdc, 0, 0, awake_tora_width, awake_tora_height, hdc_mem, 0, 0,
-               SRCCOPY);
+        SelectObject(hdc_mem,
+                     sprite_library_.GetBitmap(SpriteLibrary::kFrameJare2,
+                                               SpriteLibrary::kCharacterNeko));
+        BitBlt(hdc, 0, 0, SpriteLibrary::kSpriteSize,
+               SpriteLibrary::kSpriteSize, hdc_mem, 0, 0, SRCCOPY);
         DeleteDC(hdc_mem);
         EndPaint(hWnd, &ps);
         return 0;
@@ -131,7 +202,7 @@ class MainWindowClass : public BaseWindowClass<MainWindowClass> {
   PTCHAR GetClassName() const override { return TEXT("TEST_PROJECT"); }
 
  private:
-  HBITMAP tora_bitmap_;
+  SpriteLibrary sprite_library_;
 };
 
 static void DisplayFatalError(HWND parent, const char *error_msg = nullptr) {
@@ -152,19 +223,7 @@ static void DisplayFatalError(HWND parent, const char *error_msg = nullptr) {
              TEXT("TestProject"), MB_ICONERROR);
 }
 
-template <typename It>
-static void FlipBits(It start, It end) {
-  while (start != end) {
-    *start = (*start & 0xF0) >> 4 | (*start & 0x0F) << 4;
-    *start = (*start & 0xCC) >> 2 | (*start & 0x33) << 2;
-    *start = (*start & 0xAA) >> 1 | (*start & 0x55) << 1;
-    ++start;
-  }
-}
-
 int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE, LPTSTR, int nCmdShow) try {
-  FlipBits(std::begin(awake_tora_bits), std::end(awake_tora_bits));
-
   MainWindowClass window_class(hInstance);
   const auto window = window_class.Create();
   ShowWindow(window, nCmdShow);
