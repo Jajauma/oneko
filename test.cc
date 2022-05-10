@@ -136,16 +136,16 @@ class SpriteLibrary {
     kCharacterNeko = 0,
     kCharacterTora,
     kCharacterDog,
-    // kCharacterBeastie,
-    // kCharacterSakura,
-    // kCharacterTomoyo
+    kCharacterBeastie,
+    kCharacterSakura,
+    kCharacterTomoyo,
     kCharacterCount
   };
   enum Frame {
     kFrameMati2 = 0,
     kFrameJare2,
     kFrameKaki1,
-    // kFrameKaki2,
+    kFrameKaki2,
     // kFrameMati3,
     // kFrameSleep1,
     // kFrameSleep2,
@@ -155,7 +155,7 @@ class SpriteLibrary {
 
   HBITMAP GetBitmap(Frame f, Character c) {
     if (!sprites_[f][c].bitmap) {
-      const auto data_begin = sprites_[f][c].data;
+      const auto data_begin = static_cast<char *>(sprites_[f][c].data);
       const auto data_end = data_begin + (kSpriteSize * kSpriteSize) / 8;
       FlipBits(data_begin, data_end);
       sprites_[f][c].bitmap.reset(
@@ -171,20 +171,35 @@ class SpriteLibrary {
   };
 
   struct SpriteData {
-    char *data;
+    void *data;
     std::unique_ptr<HBITMAP, BitmapDeleter> bitmap;
   };
 
   SpriteData sprites_[kFrameCount][kCharacterCount] = {
       {{mati2_bits, nullptr},
        {mati2_tora_bits, nullptr},
-       {mati2_dog_bits, nullptr}},
+       {mati2_dog_bits, nullptr},
+       {mati2_bsd_bits, nullptr},
+       {mati2_sakura_bits, nullptr},
+       {mati2_tomoyo_bits, nullptr}},
       {{jare2_bits, nullptr},
        {jare2_tora_bits, nullptr},
-       {jare2_dog_bits, nullptr}},
+       {jare2_dog_bits, nullptr},
+       {jare2_bsd_bits, nullptr},
+       {jare2_sakura_bits, nullptr},
+       {jare2_tomoyo_bits, nullptr}},
       {{kaki1_bits, nullptr},
        {kaki1_tora_bits, nullptr},
-       {kaki1_dog_bits, nullptr}}};
+       {kaki1_dog_bits, nullptr},
+       {kaki1_bsd_bits, nullptr},
+       {kaki1_sakura_bits, nullptr},
+       {kaki1_tomoyo_bits, nullptr}},
+      {{kaki2_bits, nullptr},
+       {kaki2_tora_bits, nullptr},
+       {kaki2_dog_bits, nullptr},
+       {kaki2_bsd_bits, nullptr},
+       {kaki2_sakura_bits, nullptr},
+       {kaki2_tomoyo_bits, nullptr}}};
 };
 
 class MainWindowClass : public BaseWindowClass<MainWindowClass> {
@@ -201,8 +216,8 @@ class MainWindowClass : public BaseWindowClass<MainWindowClass> {
         hdc = BeginPaint(hWnd, &ps);
         hdc_mem = CreateCompatibleDC(hdc);
         SelectObject(hdc_mem,
-                     sprite_library_.GetBitmap(SpriteLibrary::kFrameJare2,
-                                               SpriteLibrary::kCharacterNeko));
+                     sprite_library_.GetBitmap(SpriteLibrary::kFrameMati2,
+                                               SpriteLibrary::kCharacterSakura));
         BitBlt(hdc, 0, 0, SpriteLibrary::kSpriteSize,
                SpriteLibrary::kSpriteSize, hdc_mem, 0, 0, SRCCOPY);
         DeleteDC(hdc_mem);
