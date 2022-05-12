@@ -119,12 +119,15 @@ class MainWindowClass : public BaseWindowClass<MainWindowClass> {
     static HDC hdc, hdc_mem;
     static constexpr auto kColorMoccasin = RGB(0xFF, 0xE4, 0xB5);
     static constexpr auto kColorSienna = RGB(0xA0, 0x52, 0x2D);
+    static COLORREF fg_orig, bg_orig;
 
     switch (uMsg) {
       case WM_PAINT:
         hdc = BeginPaint(hWnd, &ps);
 
         hdc_mem = CreateCompatibleDC(hdc);
+        fg_orig = SetTextColor(hdc, kColorMoccasin);
+        bg_orig = SetBkColor(hdc, kColorSienna);
         for (auto i = 0; i < SpriteLibrary::kFrameCount; ++i)
           for (auto j = 0; j < SpriteLibrary::kCharacterCount; ++j) {
             SelectObject(hdc_mem, sprite_grid_[i][j].bitmap);
@@ -138,16 +141,14 @@ class MainWindowClass : public BaseWindowClass<MainWindowClass> {
                    hdc_mem, 0, 0, SRCCOPY);
 
             SelectObject(hdc_mem, sprite_grid_[i][j].bitmap);
-            const auto fg_orig = SetTextColor(hdc, kColorMoccasin);
-            const auto bg_orig = SetBkColor(hdc, kColorSienna);
             MaskBlt(hdc, sprite_nobg_[i][j].x, sprite_nobg_[i][j].y,
                     SpriteLibrary::kSpriteSize, SpriteLibrary::kSpriteSize,
                     hdc_mem, 0, 0, sprite_mask_grid_[i][j].bitmap, 0, 0,
                     MAKEROP4(SRCCOPY, 0x00AA0029));
-            SetTextColor(hdc, fg_orig);
-            SetBkColor(hdc, bg_orig);
           }
         DeleteDC(hdc_mem);
+        SetTextColor(hdc, fg_orig);
+        SetBkColor(hdc, bg_orig);
         EndPaint(hWnd, &ps);
         return 0;
 
