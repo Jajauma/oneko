@@ -108,6 +108,8 @@ class MainWindowClass : public BaseWindowClass<MainWindowClass> {
         sprite_mask_grid_[i][j].bitmap = sprite_library_.GetMaskBitmap(
             static_cast<SpriteLibrary::Frame>(i),
             static_cast<SpriteLibrary::Character>(j));
+        sprite_nobg_[i][j].x = i * (SpriteLibrary::kSpriteSize + 5);
+        sprite_nobg_[i][j].y = j * (SpriteLibrary::kSpriteSize + 5) + 500;
       }
   }
 
@@ -115,10 +117,13 @@ class MainWindowClass : public BaseWindowClass<MainWindowClass> {
                         LPARAM lParam) override {
     static PAINTSTRUCT ps;
     static HDC hdc, hdc_mem;
+    static constexpr auto kColorMoccasin = RGB(0xFF, 0xE4, 0xB5);
+    static constexpr auto kColorSienna = RGB(0xA0, 0x52, 0x2D);
 
     switch (uMsg) {
       case WM_PAINT:
         hdc = BeginPaint(hWnd, &ps);
+
         hdc_mem = CreateCompatibleDC(hdc);
         for (auto i = 0; i < SpriteLibrary::kFrameCount; ++i)
           for (auto j = 0; j < SpriteLibrary::kCharacterCount; ++j) {
@@ -126,10 +131,21 @@ class MainWindowClass : public BaseWindowClass<MainWindowClass> {
             BitBlt(hdc, sprite_grid_[i][j].x, sprite_grid_[i][j].y,
                    SpriteLibrary::kSpriteSize, SpriteLibrary::kSpriteSize,
                    hdc_mem, 0, 0, SRCCOPY);
+
             SelectObject(hdc_mem, sprite_mask_grid_[i][j].bitmap);
             BitBlt(hdc, sprite_mask_grid_[i][j].x, sprite_mask_grid_[i][j].y,
                    SpriteLibrary::kSpriteSize, SpriteLibrary::kSpriteSize,
                    hdc_mem, 0, 0, SRCCOPY);
+
+            SelectObject(hdc_mem, sprite_grid_[i][j].bitmap);
+            const auto fg_orig = SetTextColor(hdc, kColorMoccasin);
+            const auto bg_orig = SetBkColor(hdc, kColorSienna);
+            MaskBlt(hdc, sprite_nobg_[i][j].x, sprite_nobg_[i][j].y,
+                    SpriteLibrary::kSpriteSize, SpriteLibrary::kSpriteSize,
+                    hdc_mem, 0, 0, sprite_mask_grid_[i][j].bitmap, 0, 0,
+                    MAKEROP4(SRCCOPY, 0x00AA0029));
+            SetTextColor(hdc, fg_orig);
+            SetBkColor(hdc, bg_orig);
           }
         DeleteDC(hdc_mem);
         EndPaint(hWnd, &ps);
@@ -155,6 +171,8 @@ class MainWindowClass : public BaseWindowClass<MainWindowClass> {
                          [SpriteLibrary::kCharacterCount];
   SpriteCell sprite_mask_grid_[SpriteLibrary::kFrameCount]
                               [SpriteLibrary::kCharacterCount];
+  SpriteCell sprite_nobg_[SpriteLibrary::kFrameCount]
+                         [SpriteLibrary::kCharacterCount];
 };
 
 int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE, LPTSTR, int nCmdShow) try {
